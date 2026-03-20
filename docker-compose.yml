@@ -1,0 +1,24 @@
+services:
+  sondex:
+    build: .
+    ports:
+      - "3200:3200"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/sondex
+      - PORT=3200
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=sondex
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - sondex_data:/var/lib/postgresql/data
+
+volumes:
+  sondex_data:

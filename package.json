@@ -1,0 +1,27 @@
+{
+  "name": "sondex-oss",
+  "version": "0.1.0",
+  "description": "Self-hosted Sondex with local Postgres and Hono API",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "sondex": "./src/cli.js"
+  },
+  "scripts": {
+    "init": "node src/cli.js init",
+    "start": "node src/cli.js start",
+    "migrate": "node src/cli.js migrate",
+    "status": "node src/cli.js status"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "commander": "^14.0.1",
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.10.2",
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
+  }
+}
