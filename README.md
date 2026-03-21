@@ -39,6 +39,20 @@ Default config path: `~/.config/sondex/config.json`
     "api_key": "sk_live_...",
     "webhook_secret": "whsec_..."
   },
+  "gmail": {
+    "client_id": "google-client-id",
+    "client_secret": "google-client-secret",
+    "refresh_token": "google-refresh-token",
+    "poll_interval_seconds": 300
+  },
+  "imap": {
+    "host": "imap.gmail.com",
+    "port": 993,
+    "user": "you@yourdomain.com",
+    "password": "app-password",
+    "tls": true,
+    "poll_interval_seconds": 300
+  },
   "openclaw_webhook_url": "http://localhost:4440/api/system-event"
 }
 ```
@@ -49,8 +63,22 @@ Environment overrides supported:
 - `ANTHROPIC_API_KEY`
 - `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX`, `AGENTMAIL_WEBHOOK_SECRET`
 - `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET`
+- `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_POLL_INTERVAL_SECONDS`
+- `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASSWORD`, `IMAP_TLS`, `IMAP_POLL_INTERVAL_SECONDS`
 - `OPENCLAW_WEBHOOK_URL`
 - `SONDEX_CONFIG_PATH`
+
+### Gmail setup
+
+1. Add `gmail.client_id` and `gmail.client_secret` to config.
+2. Run `sondex connect-gmail` to complete OAuth and save `gmail.refresh_token`.
+3. Start Sondex. Gmail sync starts automatically on boot if credentials are configured.
+
+### IMAP setup
+
+1. Add `imap.host`, `imap.port`, `imap.user`, `imap.password`, and `imap.tls` to config.
+2. Start Sondex. IMAP sync starts automatically on boot if credentials are configured.
+3. Optional: set `imap.poll_interval_seconds` (default: 300 / 5 min).
 
 ## API Reference
 
@@ -112,6 +140,11 @@ Patch payload:
 - `POST /api/webhooks/agentmail`
 - `POST /api/webhooks/stripe`
 
+### Manual email sync
+
+- `POST /api/sync/gmail`
+- `POST /api/sync/imap`
+
 If webhook secrets are set in config, include one of:
 
 - `x-webhook-secret`
@@ -126,14 +159,18 @@ If webhook secrets are set in config, include one of:
 3. Configure inbound event webhooks:
    - AgentMail -> `POST /api/webhooks/agentmail`
    - Stripe -> `POST /api/webhooks/stripe`
-4. Use `openclaw-skill/SKILL.md` as your reusable OpenClaw skill template.
+4. Trigger manual email sync if needed:
+   - Gmail -> `POST /api/sync/gmail`
+   - IMAP -> `POST /api/sync/imap`
+5. Use `openclaw-skill/SKILL.md` as your reusable OpenClaw skill template.
 
 ## CLI
 
 - `sondex init` - create config + run migrations
+- `sondex connect-gmail` - run Gmail OAuth and store refresh token
 - `sondex start` - start API server
 - `sondex migrate` - run migrations
-- `sondex status` - print URL, DB health, contact count, last webhook timestamp
+- `sondex status` - print URL, DB health, contact count, last webhook timestamp, connected email sources
 
 ## Contributing
 

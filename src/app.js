@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { and, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { contacts, interactions, payments, relationshipWorkflows } from './db/schema.js';
 import { compactInteraction, generateSummary } from './services/summarize.js';
+import { getEnabledEmailSources } from './services/email-sync.js';
 
 const uuidRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -100,7 +101,7 @@ async function fetchContactByIdentifier(db, identifier) {
   return null;
 }
 
-export function createApp({ db, config }) {
+export function createApp({ db, config, emailSync = null }) {
   const app = new Hono();
 
   app.get('/', (c) =>
@@ -108,6 +109,7 @@ export function createApp({ db, config }) {
       name: 'sondex-oss',
       status: 'ok',
       port: config.port,
+      email_sources: getEnabledEmailSources(config),
       docs: '/api/contacts'
     })
   );
@@ -487,6 +489,42 @@ export function createApp({ db, config }) {
         matched_by: matchedBy
       }
     });
+  });
+
+  app.post('/api/sync/gmail', async (c) => {
+    if (!emailSync) {
+      return c.json({ error: 'Email sync service unavailable.' }, 503);
+    }
+
+    const result = await emailSync.syncGmail();
+    if (result.disabled) {
+      return c.json(
+        {
+          error: 'Gmail is not configured. Set gmail.client_id, gmail.client_secret, and gmail.refresh_token.'
+        },
+        400
+      );
+    }
+
+    return c.json({ ok: true, ...result });
+  });
+
+  app.post('/api/sync/imap', async (c) => {
+    if (!emailSync) {
+      return c.json({ error: 'Email sync service unavailable.' }, 503);
+    }
+
+    const result = await emailSync.syncImap();
+    if (result.disabled) {
+      return c.json(
+        {
+          error: 'IMAP is not configured. Set imap.host, imap.port, imap.user, imap.password, and imap.tls.'
+        },
+        400
+      );
+    }
+
+    return c.json({ ok: true, ...result });
   });
 
   app.post('/api/webhooks/agentmail', async (c) => {

@@ -8,6 +8,7 @@
     "sondex": "./src/cli.js"
   },
   "scripts": {
+    "build": "node --check src/cli.js && node --check src/server.js && node --check src/app.js && node --check src/lib/config.js && node --check src/services/email-sync.js",
     "init": "node src/cli.js init",
     "start": "node src/cli.js start",
     "migrate": "node src/cli.js migrate",
@@ -20,7 +21,9 @@
     "@hono/node-server": "^1.19.6",
     "commander": "^14.0.1",
     "drizzle-orm": "^0.44.7",
+    "googleapis": "^171.4.0",
     "hono": "^4.10.2",
+    "imapflow": "^1.2.16",
     "pg": "^8.16.3",
     "zod": "^4.1.12"
   }
